@@ -2,23 +2,25 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { BiSolidDashboard } from "react-icons/bi";
+import { FiUsers } from "react-icons/fi";
+import { TbFileInvoice } from "react-icons/tb";
 
-const SideBar: React.FC = () => {
+const SideBar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div>
-      {/* Hamburger button for mobile view */}
       <button
         className="absolute left-0 top-0 z-10 p-4 md:hidden"
         onClick={() => setIsOpen(!isOpen)}
-        style={{ background: "rgba(255, 255, 255, 0.8)" }} // semi-transparent background
+        style={{ background: "rgba(255, 255, 255, 0.8)" }}
       >
-        &#9776; {/* Simple Hamburger Icon */}
+        &#9776;
       </button>
 
       <div
-        className={`shadow-r fixed left-0 top-0 h-screen w-64 bg-white transition-all duration-300 ease-in-out 
+        className={`bottom-[10px] left-0 h-full w-64 rounded-l-lg bg-white transition-all duration-300 ease-in-out
                    ${
                      isOpen
                        ? "translate-x-0 transform"
@@ -29,19 +31,22 @@ const SideBar: React.FC = () => {
         <div className="mb-10 p-6 font-bold text-violet-500">In.voice</div>
 
         {/* Menu */}
-        <ul className="text-black">
+        <ul className="text-gray-500">
           <Link href="/dashboard">
-            <li className="transform border-l-4 border-transparent p-6 transition-all duration-300 ease-in-out hover:translate-x-2 hover:border-blue-500 hover:bg-gray-200">
+            <li className="relative left-[-7px] translate-x-2 transform border-l-4 border-transparent p-4 transition-all duration-300 ease-in-out hover:border-blue-300 hover:bg-gray-100">
+              <BiSolidDashboard className="mr-2 inline-block" />
               Dashboard
             </li>
           </Link>
           <Link href="/invoices">
-            <li className="transform border-l-4 border-transparent p-6 transition-all duration-300 ease-in-out hover:translate-x-2 hover:border-blue-500 hover:bg-gray-200">
+            <li className="relative left-[-7px] translate-x-2 transform border-l-4 border-transparent p-4 transition-all duration-300 ease-in-out hover:border-blue-300 hover:bg-gray-100">
+              <TbFileInvoice className="mr-2 inline-block" />
               Invoices
             </li>
           </Link>
           <Link href="/users">
-            <li className="transform border-l-4 border-transparent p-6 transition-all duration-300 ease-in-out hover:translate-x-2 hover:border-blue-500 hover:bg-gray-200">
+            <li className="relative left-[-7px] translate-x-2 transform border-l-4 border-transparent p-4 transition-all duration-300 ease-in-out hover:border-blue-300 hover:bg-gray-100">
+              <FiUsers className="mr-2 inline-block" />
               Users
             </li>
           </Link>
