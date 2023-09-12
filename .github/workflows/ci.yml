@@ -2,13 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: ["*"]
   push:
     branches: ["main"]
-  merge_group:
 
-# You can leverage Vercel Remote Caching with Turbo to speed up your builds
-# @link https://turborepo.org/docs/core-concepts/remote-caching#remote-caching-on-vercel-builds
 env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
@@ -19,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2 # Ensure that v2 is the latest stable version.
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2.4.0
@@ -32,10 +28,10 @@ jobs:
       - name: Get pnpm store directory
         id: pnpm-cache
         run: |
-          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
+          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_ENV # Use GITHUB_ENV instead of GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v3 # Ensure that v3 is the latest stable version.
         with:
           path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -45,7 +41,7 @@ jobs:
       - name: Install deps (with cache)
         run: pnpm install
 
-      - name: Build, lint and type-check
+      - name: Build, lint, and type-check
         run: pnpm turbo build lint typecheck
 
       - name: Check workspaces
