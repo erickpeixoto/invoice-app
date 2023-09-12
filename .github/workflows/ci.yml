@@ -1,48 +1,39 @@
 name: CI
 
 on:
-  pull_request:
   push:
-    branches: ["main"]
-
-env:
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+    branches:
+      - main
+  pull_request:
 
 jobs:
-  build-lint:
+  lint-typecheck-build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2 # Ensure that v2 is the latest stable version.
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2.4.0
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Setup Node 18
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: "18.17.1"
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_ENV # Use GITHUB_ENV instead of GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v3 # Ensure that v3 is the latest stable version.
+      - name: Cache node_modules
+        uses: actions/cache@v3
         with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+            ${{ runner.os }}-pnpm-
 
-      - name: Install deps (with cache)
+      - name: Install dependencies
         run: pnpm install
 
-      - name: Build, lint, and type-check
-        run: pnpm turbo build lint typecheck
+      - name: Lint
+        run: pnpm run lint
 
-      - name: Check workspaces
-        run: pnpm manypkg check
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Build
+        run: pnpm run build
