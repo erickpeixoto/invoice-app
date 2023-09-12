@@ -6,6 +6,7 @@ import "~/styles/globals.css";
 import { headers } from "next/headers";
 import { ClerkProvider } from "@clerk/nextjs";
 
+import NavBar from "~/components/NavBar";
 import SideBar from "~/components/SideBar";
 import { TRPCReactProvider } from "./providers";
 
@@ -26,11 +27,12 @@ export default function Layout(props: { children: React.ReactNode }) {
       <body className={["font-sans", fontSans.variable].join(" ")}>
         <div className="flex h-screen flex-col bg-blue-100 p-5 md:flex-row">
           <SideBar />
-          <div className="flex-1 overflow-y-auto p-4 md:p-10">
+          <main className="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-10">
+            <NavBar />
             <TRPCReactProvider headers={headers()}>
               <ClerkProvider>{props.children}</ClerkProvider>
             </TRPCReactProvider>
-          </div>
+          </main>
         </div>
       </body>
     </html>
