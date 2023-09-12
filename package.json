@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@acme/prettier-config": "^0.1.0",
+    "@clerk/nextjs": "^4.23.2",
     "@manypkg/cli": "^0.21.0",
     "@turbo/gen": "^1.10.13",
     "prettier": "^3.0.3",
