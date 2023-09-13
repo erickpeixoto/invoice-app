@@ -6,6 +6,7 @@ import "~/styles/globals.css";
 import { headers } from "next/headers";
 import { ClerkProvider } from "@clerk/nextjs";
 
+import NavBar from "~/components/NavBar";
 import SideBar from "~/components/SideBar";
 import { TRPCReactProvider } from "./providers";
 
@@ -15,19 +16,8 @@ const fontSans = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "aiWave",
-  description: "Simple monorepo with shared backend for web & mobile apps",
-  openGraph: {
-    title: "aiWave",
-    description: "Simple monorepo with shared backend for web & mobile apps",
-    url: "https://create-t3-turbo.vercel.app",
-    siteName: "aiWave",
-  },
-  twitter: {
-    card: "summary_large_image",
-    site: "@jullerino",
-    creator: "@jullerino",
-  },
+  title: "in.voice",
+  description: "in.voice - Invoicing for the modern freelancer",
 };
 
 export default function Layout(props: { children: React.ReactNode }) {
@@ -35,15 +25,14 @@ export default function Layout(props: { children: React.ReactNode }) {
     <html lang="en">
       <head>{/* Additional <head> elements can be added here. */}</head>
       <body className={["font-sans", fontSans.variable].join(" ")}>
-        <div className="flex h-screen flex-col bg-gray-100 md:flex-row">
-          <div className="shadow-r w-full bg-white md:h-screen md:w-64">
-            <SideBar />
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 md:p-10">
+        <div className="flex h-screen flex-col bg-blue-100 p-5 md:flex-row">
+          <SideBar />
+          <main className="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-10">
+            <NavBar />
             <TRPCReactProvider headers={headers()}>
               <ClerkProvider>{props.children}</ClerkProvider>
             </TRPCReactProvider>
-          </div>
+          </main>
         </div>
       </body>
     </html>
