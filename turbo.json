@@ -25,6 +25,9 @@
       "dependsOn": ["^topo"],
       "outputs": ["node_modules/.cache/tsbuildinfo.json"]
     },
+    "migrate": {
+      "dependsOn": ["^topo"]
+    },
     "clean": {
       "cache": false
     },

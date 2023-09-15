@@ -43,3 +43,6 @@ yarn-error.log*
 
 # turbo
 .turbo
+
+# drizzle migration
+/packages/db/migrations
