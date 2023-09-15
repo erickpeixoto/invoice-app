@@ -47,11 +47,10 @@ export const invoiceRouter = createTRPCRouter({
         });
       }
 
-      // Fetch and return the newly inserted invoice along with its line items
       const newInvoice = await ctx.db.query.invoices.findFirst({
         with: {
-          client: true, // fetch related client
-          lineItems: true, // fetch associated line items
+          client: true,
+          lineItems: true,
         },
       });
 
@@ -59,7 +58,12 @@ export const invoiceRouter = createTRPCRouter({
     }),
 
   all: publicProcedure.query(({ ctx }) => {
-    return ctx.db.query.invoices.findMany();
+    return ctx.db.query.invoices.findMany({
+      with: {
+        client: true,
+        lineItems: true, // Added lineItems
+      },
+    });
   }),
   latest: publicProcedure.query(({ ctx }) => {
     return ctx.db.query.invoices.findFirst({

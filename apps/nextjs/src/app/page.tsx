@@ -1,9 +1,11 @@
-export const runtime = "edge";
+import React from "react";
 
-export default function HomePage() {
+const Edit = () => {
   return (
-    <main className="flex-1">
-      <div className="container">Body Content</div>
-    </main>
+    <div>
+      <h1>Edit Invoice</h1>
+    </div>
   );
-}
+};
+
+export default Edit;
