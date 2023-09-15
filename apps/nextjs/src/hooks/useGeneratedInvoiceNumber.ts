@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { useEffect, useState } from "react";
 
 import { api } from "~/utils/api";
@@ -33,7 +34,7 @@ export function useGeneratedInvoiceNumber() {
       setInvoiceNumber(newInvoiceNumber);
     }
 
-    fetchAndGenerate();
+    void fetchAndGenerate();
   }, [lastInvoice]); // Add lastInvoice as a dependency
 
   return invoiceNumber;

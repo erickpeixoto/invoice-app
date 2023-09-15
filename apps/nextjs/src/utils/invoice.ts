@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/await-thenable */
 import { api } from "./api";
 
 export async function generateInvoiceNumber(): Promise<string> {
@@ -18,6 +19,6 @@ export async function generateInvoiceNumber(): Promise<string> {
       "Unexpected invoiceNumber format:",
       lastInvoice?.invoiceNumber,
     );
-    return `${prefix}-0001`; // defaulting to first number if format is unexpected
+    return `${prefix}-0001`;
   }
 }
