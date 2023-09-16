@@ -9,29 +9,8 @@ import {
 } from "drizzle-orm/mysql-core";
 
 import { mySqlTable } from "./_table";
+import { clients } from "./client";
 
-// User Schema
-export const users = mySqlTable("users", {
-  id: serial("id").primaryKey(),
-  username: varchar("username", { length: 128 }).notNull().unique(),
-  password: varchar("password", { length: 256 }).notNull(),
-  email: varchar("email", { length: 256 }).notNull().unique(),
-  createdAt: timestamp("created_at")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp("updated_at").onUpdateNow(),
-});
-
-// Client Schema (Bonus Feature)
-export const clients = mySqlTable("clients", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 256 }).notNull(),
-  address: varchar("address", { length: 256 }),
-  contact: varchar("contact", { length: 256 }),
-  userId: int("user_id"),
-});
-
-// Invoice Schema
 export const invoices = mySqlTable("invoices", {
   id: serial("id").primaryKey(),
   invoiceNumber: varchar("invoice_number", { length: 128 }).notNull(),
@@ -51,7 +30,6 @@ export const invoices = mySqlTable("invoices", {
   updatedAt: timestamp("updated_at").onUpdateNow(),
 });
 
-// Invoice Line Item Schema
 export const invoiceLineItems = mySqlTable("invoice_line_items", {
   id: serial("id").primaryKey(),
   invoiceId: int("invoice_id"),
@@ -63,25 +41,12 @@ export const invoiceLineItems = mySqlTable("invoice_line_items", {
   updatedAt: timestamp("updated_at").onUpdateNow(),
 });
 
-// Relations
-export const userRelations = relations(users, ({ many }) => ({
-  invoices: many(invoices),
-  clients: many(clients), // Bonus Feature
-}));
-
 export const invoiceRelations = relations(invoices, ({ one, many }) => ({
   client: one(clients, {
     fields: [invoices.clientId],
     references: [clients.id],
   }),
   lineItems: many(invoiceLineItems),
-}));
-
-export const clientRelations = relations(clients, ({ one }) => ({
-  user: one(users, {
-    fields: [clients.userId],
-    references: [users.id],
-  }),
 }));
 
 export const invoiceLineItemRelations = relations(
