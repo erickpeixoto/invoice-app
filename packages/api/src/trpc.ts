@@ -13,7 +13,7 @@ import type {
 } from "@clerk/nextjs/server";
 import { getAuth } from "@clerk/nextjs/server";
 import { initTRPC, TRPCError } from "@trpc/server";
-import type * as trpcNext from "@trpc/server/adapters/next";
+import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
@@ -53,9 +53,7 @@ export const createContextInner = async ({ auth }: AuthContext) => {
  * process every request that goes through your tRPC endpoint
  * @link https://trpc.io/docs/context
  */
-export const createTRPCContext = async (
-  opts: trpcNext.CreateNextContextOptions,
-) => {
+export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   return await createContextInner({ auth: getAuth(opts.req) });
 };
 
