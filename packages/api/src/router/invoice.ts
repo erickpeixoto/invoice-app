@@ -25,13 +25,12 @@ export const invoiceRouter = createTRPCRouter({
             description: z.string().min(1),
             amount: z.number(),
           }),
-        ), // Added lineItems validation
+        ),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       // Insert the main invoice and get its ID
       const invoiceResult = await ctx.db.insert(schema.invoices).values(input);
-      console.log("invoiceId", { invoiceResult });
       const invoiceId = invoiceResult.insertId;
 
       // Insert each lineItem into the invoice_line_items table
