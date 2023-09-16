@@ -25,13 +25,12 @@ export const invoiceRouter = createTRPCRouter({
             description: z.string().min(1),
             amount: z.number(),
           }),
-        ), // Added lineItems validation
+        ),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       // Insert the main invoice and get its ID
       const invoiceResult = await ctx.db.insert(schema.invoices).values(input);
-      console.log("invoiceId", { invoiceResult });
       const invoiceId = invoiceResult.insertId;
 
       // Insert each lineItem into the invoice_line_items table
@@ -47,11 +46,10 @@ export const invoiceRouter = createTRPCRouter({
         });
       }
 
-      // Fetch and return the newly inserted invoice along with its line items
       const newInvoice = await ctx.db.query.invoices.findFirst({
         with: {
-          client: true, // fetch related client
-          lineItems: true, // fetch associated line items
+          client: true,
+          lineItems: true,
         },
       });
 
@@ -59,7 +57,12 @@ export const invoiceRouter = createTRPCRouter({
     }),
 
   all: publicProcedure.query(({ ctx }) => {
-    return ctx.db.query.invoices.findMany();
+    return ctx.db.query.invoices.findMany({
+      with: {
+        client: true,
+        lineItems: true, // Added lineItems
+      },
+    });
   }),
   latest: publicProcedure.query(({ ctx }) => {
     return ctx.db.query.invoices.findFirst({
