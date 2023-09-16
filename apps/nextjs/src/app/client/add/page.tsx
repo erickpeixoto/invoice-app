@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { UploadCloud } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
 import type { UploadFileResponse } from "uploadthing/client";

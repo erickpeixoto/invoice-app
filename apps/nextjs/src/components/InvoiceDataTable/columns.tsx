@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-base-to-string */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+
 "use client";
 
 import * as React from "react";
@@ -45,8 +43,7 @@ export const columns: ColumnDef<InvoiceProps>[] = [
     accessorKey: "totalAmount",
     header: () => <div className="text-right">Total Amount</div>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("totalAmount"));
-      const currency = (row.getValue("currency") as string) || "USD";
+      const currency = row.getValue("currency") || "USD";
 
       // List of valid currency codes for validation
       const validCurrencyCodes = [
@@ -62,17 +59,12 @@ export const columns: ColumnDef<InvoiceProps>[] = [
         "NZD",
       ];
 
-      if (!validCurrencyCodes.includes(currency)) {
+      if (!validCurrencyCodes.includes(currency as string)) {
         console.error(`Invalid currency code: ${currency}`);
         return <div className="text-right font-medium">Error</div>;
       }
 
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: currency,
-      }).format(amount);
-
-      return <div className="text-right font-medium">{formatted}</div>;
+      return <div className="text-right font-medium">HERE</div>;
     },
   },
 

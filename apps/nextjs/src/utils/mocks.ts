@@ -1,5 +1,3 @@
-import type { InvoiceProps } from "~/components/InvoiceDataTable";
-
 const statuses = ["paid", "unpaid", "pending"];
 const currencies = [
   "USD",
