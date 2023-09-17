@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/require-await */
 /**
  * YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:
  * 1. You want to modify request context (see Part 1)
@@ -7,16 +6,12 @@
  * tl;dr - this is where all the tRPC server stuff is created and plugged in.
  * The pieces you will need to use are documented accordingly near the end
  */
-import type {
-  SignedInAuthObject,
-  SignedOutAuthObject,
-} from "@clerk/nextjs/server";
-import { getAuth } from "@clerk/nextjs/server";
 import { initTRPC, TRPCError } from "@trpc/server";
-import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
+import { auth } from "@acme/auth";
+import type { Session } from "@acme/auth";
 import { db } from "@acme/db";
 
 /**
@@ -28,10 +23,10 @@ import { db } from "@acme/db";
  * processing a request
  *
  */
-
-interface AuthContext {
-  auth: SignedInAuthObject | SignedOutAuthObject;
+interface CreateContextOptions {
+  session: Session | null;
 }
+
 /**
  * This helper generates the "internals" for a tRPC context. If you need to use
  * it, you can export it from here
@@ -41,9 +36,9 @@ interface AuthContext {
  * - trpc's `createSSGHelpers` where we don't have req/res
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  */
-export const createContextInner = async ({ auth }: AuthContext) => {
+const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
-    session: auth,
+    session: opts.session,
     db,
   };
 };
@@ -53,8 +48,18 @@ export const createContextInner = async ({ auth }: AuthContext) => {
  * process every request that goes through your tRPC endpoint
  * @link https://trpc.io/docs/context
  */
-export const createTRPCContext = async (opts: CreateNextContextOptions) => {
-  return await createContextInner({ auth: getAuth(opts.req) });
+export const createTRPCContext = async (opts: {
+  req?: Request;
+  auth?: Session;
+}) => {
+  const session = opts.auth ?? (await auth());
+  const source = opts.req?.headers.get("x-trpc-source") ?? "unknown";
+
+  console.log(">>> tRPC Request from", source, "by", session?.user);
+
+  return createInnerTRPCContext({
+    session,
+  });
 };
 
 /**
@@ -103,14 +108,14 @@ export const publicProcedure = t.procedure;
  * Reusable middleware that enforces users are logged in before running the
  * procedure
  */
-const enforceUserIsAuthed = t.middleware(({ next, ctx }) => {
-  console.log("ctx.session.userId", ctx.session);
-  if (!ctx.session.userId) {
+const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
+  if (!ctx.session?.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({
     ctx: {
-      session: { ...ctx.session, userId: ctx.session.userId },
+      // infers the `session` as non-nullable
+      session: { ...ctx.session, user: ctx.session.user },
     },
   });
 });

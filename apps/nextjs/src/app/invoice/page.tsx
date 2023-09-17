@@ -2,8 +2,7 @@
 
 import React from "react";
 
-import type { InvoiceProps } from "~/components/InvoiceDataTable";
-import InvoiceTable from "~/components/InvoiceDataTable";
+import InvoiceTable from "~/components/ClientDataTable";
 import { api } from "~/utils/api";
 
 const InvoicePage = () => {
@@ -12,7 +11,7 @@ const InvoicePage = () => {
   return (
     <div>
       <h1>Invoices</h1>
-      <InvoiceTable data={data as InvoiceProps[]} />
+      <InvoiceTable data={data as never} />
     </div>
   );
 };

@@ -1,14 +1,15 @@
 import { z } from "zod";
 
-import { desc, schema } from "@acme/db";
+import { desc, eq, schema } from "@acme/db";
 
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { createTRPCRouter, publicProcedure } from "../trpc";
 
 export const clientRouter = createTRPCRouter({
-  create: protectedProcedure
+  create: publicProcedure
     .input(
       z.object({
-        name: z.string().min(1),
+        id: z.number().optional(),
+        name: z.string(),
         address: z.string(),
         city: z.string(),
         state: z.string(),
@@ -30,4 +31,46 @@ export const clientRouter = createTRPCRouter({
       orderBy: desc(schema.clients.id),
     });
   }),
+  selected: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .query(({ ctx, input }) => {
+      return ctx.db.query.clients.findMany({
+        where: eq(schema.clients.id, input.id),
+      });
+    }),
+  update: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+        address: z.string(),
+        city: z.string(),
+        state: z.string(),
+        zip: z.string(),
+        phone: z.string(),
+        email: z.string(),
+        profile: z.string(),
+        authId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const updatedClient = await ctx.db
+        .update(schema.clients)
+        .set({
+          name: input.name,
+          address: input.address,
+          city: input.city,
+          state: input.state,
+          zip: input.zip,
+          phoneNumber: input.phone,
+          email: input.email,
+          profile: input.profile || "",
+          authId: input.authId,
+        })
+        .where(eq(schema.clients.id, input.id));
+      console.log(input);
+      if (!updatedClient) {
+        throw new Error("Failed to update client");
+      }
+    }),
 });
