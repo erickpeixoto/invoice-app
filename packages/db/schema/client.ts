@@ -5,8 +5,8 @@ import { mySqlTable } from "./_table";
 
 export const clients = mySqlTable("clients", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 256 }),
-  email: varchar("email", { length: 256 }),
+  name: varchar("name", { length: 256 }).notNull(),
+  email: varchar("email", { length: 256 }).notNull(),
   phoneNumber: varchar("phoneNumber", { length: 15 }),
   createdAt: timestamp("created_at")
     .default(sql`CURRENT_TIMESTAMP`)
