@@ -30,15 +30,15 @@ export function mapSourceToTarget(
   if (!sourceData) return [];
 
   return sourceData.map((client) => ({
-    id: client.id || 0,
-    name: client.name || "",
-    email: client.email || "",
-    profile: client.profile || "",
-    address: client.address || "",
-    zip: client.zip || "",
-    city: client.city || "",
-    state: client.state || "",
-    authId: client.authId || "",
-    phone: client.phoneNumber || "",
+    id: client.id ?? 0,
+    name: client.name ?? "",
+    email: client.email ?? "",
+    profile: client.profile ?? "",
+    address: client.address ?? "",
+    zip: client.zip ?? "",
+    city: client.city ?? "",
+    state: client.state ?? "",
+    authId: client.authId ?? "",
+    phone: client.phoneNumber ?? "",
   }));
 }
