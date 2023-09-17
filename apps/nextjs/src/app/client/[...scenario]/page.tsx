@@ -3,6 +3,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Settings, UploadCloud } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -27,6 +28,9 @@ import { UploadButton } from "~/utils/uploadthing";
 export const runtime = "edge";
 
 type ClientFormData = RouterInputs["costumer"]["create"];
+interface MutationSuccessData {
+  insertId: string;
+}
 
 const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
   const { scenario } = params;
@@ -36,6 +40,7 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
   const { toast } = useToast();
   const { userId } = useAuth();
   const context = api.useContext();
+  const router = useRouter();
 
   const [profile, setProfile] = useState(
     {} as (UploadFileResponse[] & { url?: string | null }) | undefined,
@@ -61,27 +66,29 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
 
   // Create mode
   const { mutateAsync: createClient } = api.costumer.create.useMutation({
-    async onSuccess() {
+    onSuccess({ insertId }: MutationSuccessData) {
       toast({
         title: "Client created!",
         description: "We've created your Client for you.",
         duration: 5000,
       });
-      await context.costumer.all.invalidate();
+      if (insertId) {
+        router.push(`/client/edit/${insertId}`);
+      }
     },
     onError(error) {
       console.error("Error creating client:", error);
     },
   });
-
   // Edit mode
   const { mutateAsync: editClient } = api.costumer.update.useMutation({
-    onSuccess() {
+    async onSuccess() {
       toast({
         title: "Client updated!",
         description: "We've updated your Client for you.",
         duration: 5000,
       });
+      await context.costumer.all.invalidate();
     },
     onError(error) {
       console.error("Error updating client:", error);
@@ -156,7 +163,7 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
                   allowedContent({ ready, isUploading }) {
                     if (!ready) return <Loading />;
                     if (isUploading) return <Loading />;
-                    if (!clientSelected) {
+                    if (!clientSelected && !profile?.[0]?.url) {
                       return (
                         <div className="flex flex-col items-center justify-center">
                           <div className="text-sm">
