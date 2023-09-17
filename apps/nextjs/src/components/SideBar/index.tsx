@@ -101,6 +101,16 @@ const SideBar = () => {
               Clients
             </li>
           </Link>
+          <Link href="/profile">
+            <li
+              className={`relative left-[-7px] translate-x-2 transform border-l-4 border-transparent p-4 transition-all duration-300 ease-in-out ${menuItemClass(
+                "/profile",
+              )}`}
+            >
+              <ClientIcon className="mr-2 inline-block" />
+              Profile
+            </li>
+          </Link>
         </ul>
       </div>
     </div>
