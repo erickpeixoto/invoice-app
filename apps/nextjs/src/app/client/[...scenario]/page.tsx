@@ -9,7 +9,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import type { UploadFileResponse } from "uploadthing/client";
 
 import ClientDataTable from "~/components/ClientDataTable";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
   Collapsible,
@@ -24,6 +24,8 @@ import { api } from "~/utils/api";
 import { mapSourceToTarget } from "~/utils/mappers";
 import { UploadButton } from "~/utils/uploadthing";
 
+export const runtime = "edge";
+
 type ClientFormData = RouterInputs["costumer"]["create"];
 
 const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
@@ -33,6 +35,7 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
 
   const { toast } = useToast();
   const { userId } = useAuth();
+  const context = api.useContext();
 
   const [profile, setProfile] = useState(
     {} as (UploadFileResponse[] & { url?: string | null }) | undefined,
@@ -42,7 +45,7 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
 
   const clients = api.costumer.all.useQuery().data;
   const transformedData = mapSourceToTarget(clients);
-  console.log("transformedData", transformedData);
+
   // Edition mode
   const clientSelectedQuery = api.costumer.selected.useQuery({
     id: scenario[1] ? parseInt(scenario[1]) : -1,
@@ -56,19 +59,22 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
     }
   }, [clientSelected, scenario, setValue]);
 
+  // Create mode
   const { mutateAsync: createClient } = api.costumer.create.useMutation({
-    onSuccess() {
+    async onSuccess() {
       toast({
         title: "Client created!",
         description: "We've created your Client for you.",
         duration: 5000,
       });
+      await context.costumer.all.invalidate();
     },
     onError(error) {
       console.error("Error creating client:", error);
     },
   });
 
+  // Edit mode
   const { mutateAsync: editClient } = api.costumer.update.useMutation({
     onSuccess() {
       toast({
@@ -110,11 +116,15 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
                   <AvatarImage
                     src={clientSelected?.profile ?? ""}
                     alt="Profile"
-                    className="rounded-2xl"
+                    className="inline-block rounded-full"
                   />
-                  <AvatarFallback>
-                    <Loading />
-                  </AvatarFallback>
+                  {!clientSelected?.profile && (
+                    <AvatarImage
+                      src={"https://via.placeholder.com/150"}
+                      alt="Profile"
+                      className="inline-block rounded-full"
+                    />
+                  )}
                 </Avatar>
               )}
 
@@ -123,7 +133,7 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
                   <AvatarImage
                     src={profile?.[0]?.url ?? ""}
                     alt="Profile"
-                    className="rounded-2xl"
+                    className="inline-block rounded-full"
                   />
                 </Avatar>
               )}

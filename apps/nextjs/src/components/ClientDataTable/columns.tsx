@@ -46,7 +46,10 @@ export const columns: ColumnDef<ClientFormData>[] = [
         {row.original.profile ? (
           <AvatarImage src={row.original.profile} alt={row.original.name} />
         ) : (
-          <AvatarFallback />
+          <AvatarImage
+            src="https://via.placeholder.com/150"
+            alt={row.original.name}
+          />
         )}
       </Avatar>
     ),
