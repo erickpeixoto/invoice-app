@@ -3,9 +3,9 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import type { ColumnDef } from "@tanstack/react-table";
-import { LayoutPanelTop } from "lucide-react";
+import { LayoutPanelTop, Trash2 } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
@@ -18,7 +18,9 @@ import {
 } from "~/components/ui/dropdown-menu";
 import type { ClientFormData } from ".";
 
-export const columns: ColumnDef<ClientFormData>[] = [
+export const getColumns = (
+  handleDeleteClick: (data: ClientFormData) => void,
+): ColumnDef<ClientFormData>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -73,11 +75,19 @@ export const columns: ColumnDef<ClientFormData>[] = [
     id: "actions",
     header: "Actions",
     enableHiding: false,
-    cell: ({ row }) => <ActionCell client={row.original} />,
+    cell: ({ row }) => (
+      <ActionCell client={row.original} onDelete={handleDeleteClick} />
+    ),
   },
 ];
 
-function ActionCell({ client }: { client: ClientFormData }) {
+function ActionCell({
+  client,
+  onDelete,
+}: {
+  client: ClientFormData;
+  onDelete: (data: ClientFormData) => void;
+}) {
   const router = useRouter();
 
   return (
@@ -100,6 +110,10 @@ function ActionCell({ client }: { client: ClientFormData }) {
           onClick={() => router.push(`/client/edit/${client.id}`)}
         >
           View client
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onDelete(client)}>
+          <Trash2 className="mr-2 h-5 w-5" />
+          Delete client
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

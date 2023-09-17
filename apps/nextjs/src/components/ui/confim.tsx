@@ -21,6 +21,7 @@ interface ConfirmDialogProps {
   cancelLabel?: string;
   onConfirm: () => void;
   onCancel?: () => void;
+  isOpen?: boolean;
 }
 
 export const ConfirmDialog = ({
@@ -31,10 +32,11 @@ export const ConfirmDialog = ({
   cancelLabel = "Cancel",
   onConfirm,
   onCancel,
+  isOpen,
 }: ConfirmDialogProps) => {
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
+    <AlertDialog open={isOpen}>
+      <AlertDialogTrigger asChild={true}>
         <Button variant="outline">{triggerLabel}</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

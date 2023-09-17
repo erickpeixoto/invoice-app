@@ -2,14 +2,17 @@
 /* eslint-disable @typescript-eslint/ban-types */
 "use client";
 
+// External Packages
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Settings, UploadCloud } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
+// Type Imports
 import type { UploadFileResponse } from "uploadthing/client";
 import type { typeToFlattenedError } from "zod";
 
+// Internal Components and Utilities
 import ClientDataTable from "~/components/ClientDataTable";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -18,18 +21,20 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "~/components/ui/collapsible";
+import { ConfirmDialog } from "~/components/ui/confim";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { useToast } from "~/components/ui/use-toast";
 import { cn } from "~/lib/utils";
-import type { RouterInputs } from "~/utils/api";
 import { api } from "~/utils/api";
+import type { RouterInputs } from "~/utils/api";
 import { mapSourceToTarget } from "~/utils/mappers";
 import { UploadButton } from "~/utils/uploadthing";
 
 export const runtime = "edge";
 
 type ClientFormData = RouterInputs["costumer"]["create"];
+
 interface MutationSuccessData {
   insertId: string;
 }
@@ -47,8 +52,10 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
   const [profile, setProfile] = useState(
     {} as (UploadFileResponse[] & { url?: string | null }) | undefined,
   );
+  const [idToBeDeleted, setIdToBeDeleted] = useState<number | undefined>();
 
   const [isOpen, setIsOpen] = useState(scenario[0] === "edit");
+  const [confirmModal, setConfirmModal] = useState(false);
 
   const clients = api.costumer.all.useQuery().data;
   const transformedData = mapSourceToTarget(clients);
@@ -97,6 +104,29 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
     },
   });
 
+  // Delete mode
+  const { mutateAsync: deleteClient } = api.costumer.delete.useMutation<number>(
+    {
+      async onSuccess() {
+        toast({
+          title: "Client deleted!",
+          description: "We've deleted your Client for you.",
+          duration: 5000,
+        });
+        await context.costumer.all.invalidate();
+        router.push(`/client/list/`);
+      },
+      onError(error) {
+        console.error("Error deleting client:", error);
+      },
+    },
+  );
+
+  const onDelete = (data: ClientFormData) => {
+    setConfirmModal(true);
+    setIdToBeDeleted(data?.id ?? 0);
+  };
+
   const onSubmit = async (data: ClientFormData) => {
     const costumerMock = {
       profile: profile?.[0]?.url ?? "",
@@ -115,7 +145,6 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
 
   return (
     <FormProvider {...methods}>
-      {typeof error}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex h-screen">
           {/* Logo Block */}
@@ -201,7 +230,23 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
               error?.data
                 ?.zodError as unknown as typeToFlattenedError<ClientFormData>
             }
+            handleDelete={onDelete}
           />
+
+          {/* Confirm Dialog */}
+          {confirmModal && (
+            <ConfirmDialog
+              isOpen={confirmModal}
+              triggerLabel=""
+              title="Are you sure?"
+              description="When you delete this client, it will be gone forever."
+              onConfirm={() => {
+                void deleteClient(idToBeDeleted ?? 0);
+                setConfirmModal(false);
+              }}
+              onCancel={() => setConfirmModal(false)}
+            />
+          )}
         </div>
       </form>
     </FormProvider>
@@ -227,6 +272,7 @@ const ClientBlock = ({
   register,
   transformedData,
   zodError,
+  handleDelete,
 }: {
   scenario: string[];
   isOpen: boolean;
@@ -235,6 +281,7 @@ const ClientBlock = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transformedData: any;
   zodError: typeToFlattenedError<ClientFormData>;
+  handleDelete: (data: ClientFormData) => void;
 }) => (
   <div className="flex w-full flex-col gap-3 p-5">
     <div className="flex w-full flex-col gap-3 p-5">
@@ -301,7 +348,7 @@ const ClientBlock = ({
           </div>
         </CollapsibleContent>
       </Collapsible>
-      <ClientDataTable data={transformedData} />
+      <ClientDataTable data={transformedData} onDelete={handleDelete} />
     </div>
   </div>
 );

@@ -68,9 +68,11 @@ export const clientRouter = createTRPCRouter({
           authId: input.authId,
         })
         .where(eq(schema.clients.id, input.id));
-      console.log(input);
       if (!updatedClient) {
         throw new Error("Failed to update client");
       }
     }),
+  delete: publicProcedure.input(z.number()).mutation(({ ctx, input }) => {
+    return ctx.db.delete(schema.clients).where(eq(schema.clients.id, input));
+  }),
 });

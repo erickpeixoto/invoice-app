@@ -15,8 +15,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  ArrowBigLeft,
-  ArrowBigRight,
+  ChevronFirst,
+  ChevronLast,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react";
@@ -45,10 +45,15 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import type { RouterInputs } from "~/utils/api";
-import { columns } from "./columns";
+import { getColumns } from "./columns";
 
 export type ClientFormData = RouterInputs["costumer"]["create"];
-const ClientTable = ({ data }: { data: ClientFormData[] }) => {
+interface ClientDataTableProps {
+  data: ClientFormData[];
+  onDelete: (data: ClientFormData) => void;
+}
+
+const ClientTable = ({ data, onDelete }: ClientDataTableProps) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -57,9 +62,12 @@ const ClientTable = ({ data }: { data: ClientFormData[] }) => {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
+  const handleDeleteClick = (clientData: ClientFormData) => {
+    onDelete(clientData);
+  };
   const table = useReactTable({
     data,
-    columns,
+    columns: getColumns(handleDeleteClick),
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -153,12 +161,7 @@ const ClientTable = ({ data }: { data: ClientFormData[] }) => {
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
+                <TableCell className="h-24 text-center">No results.</TableCell>
               </TableRow>
             )}
           </TableBody>
@@ -168,7 +171,7 @@ const ClientTable = ({ data }: { data: ClientFormData[] }) => {
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center space-x-6 lg:space-x-8">
             <div className="flex items-center space-x-2">
-              <p className="text-sm font-medium">Rows per page</p>
+              <p className="text-sm font-medium">Clients per page</p>
               <Select
                 value={`${table.getState().pagination.pageSize}`}
                 onValueChange={(value) => {
@@ -201,13 +204,14 @@ const ClientTable = ({ data }: { data: ClientFormData[] }) => {
                 disabled={!table.getCanPreviousPage()}
               >
                 <span className="sr-only">Go to first page</span>
-                <ArrowBigLeft className="h-4 w-4" />
+                <ChevronFirst className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
+                type="button"
               >
                 <span className="sr-only">Go to previous page</span>
                 <ChevronLeftIcon className="h-4 w-4" />
@@ -217,6 +221,7 @@ const ClientTable = ({ data }: { data: ClientFormData[] }) => {
                 className="h-8 w-8 p-0"
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
+                type="button"
               >
                 <span className="sr-only">Go to next page</span>
                 <ChevronRightIcon className="h-4 w-4" />
@@ -228,7 +233,7 @@ const ClientTable = ({ data }: { data: ClientFormData[] }) => {
                 disabled={!table.getCanNextPage()}
               >
                 <span className="sr-only">Go to last page</span>
-                <ArrowBigRight className="h-4 w-4" />
+                <ChevronLast className="h-4 w-4" />
               </Button>
             </div>
           </div>
