@@ -2,8 +2,8 @@
 
 import React from "react";
 
-import type { InvoiceProps } from "~/components/InvoiceDataTable";
-import InvoiceTable from "~/components/InvoiceDataTable";
+import type { InvoiceProps } from "~/components/ClientDataTable";
+import InvoiceTable from "~/components/ClientDataTable";
 import { api } from "~/utils/api";
 
 const InvoicePage = () => {
