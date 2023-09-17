@@ -9,13 +9,13 @@ export const clientRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.number().optional(),
-        name: z.string(),
+        name: z.string().min(1),
         address: z.string(),
         city: z.string(),
         state: z.string(),
         zip: z.string(),
         phone: z.string(),
-        email: z.string(),
+        email: z.string().email(),
         profile: z.string(),
         authId: z.string().min(1),
       }),

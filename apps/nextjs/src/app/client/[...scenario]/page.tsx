@@ -8,6 +8,7 @@ import { useAuth } from "@clerk/nextjs";
 import { Settings, UploadCloud } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
 import type { UploadFileResponse } from "uploadthing/client";
+import type { typeToFlattenedError } from "zod";
 
 import ClientDataTable from "~/components/ClientDataTable";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
@@ -20,6 +21,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { useToast } from "~/components/ui/use-toast";
+import { cn } from "~/lib/utils";
 import type { RouterInputs } from "~/utils/api";
 import { api } from "~/utils/api";
 import { mapSourceToTarget } from "~/utils/mappers";
@@ -65,7 +67,7 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
   }, [clientSelected, scenario, setValue]);
 
   // Create mode
-  const { mutateAsync: createClient } = api.costumer.create.useMutation({
+  const { mutateAsync: createClient, error } = api.costumer.create.useMutation({
     onSuccess({ insertId }: MutationSuccessData) {
       toast({
         title: "Client created!",
@@ -76,7 +78,7 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
         router.push(`/client/edit/${insertId}`);
       }
     },
-    onError(error) {
+    onError() {
       console.error("Error creating client:", error);
     },
   });
@@ -113,6 +115,7 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
 
   return (
     <FormProvider {...methods}>
+      {typeof error}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex h-screen">
           {/* Logo Block */}
@@ -194,6 +197,10 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
             register={register}
             setIsOpen={setIsOpen}
             transformedData={transformedData}
+            zodError={
+              error?.data
+                ?.zodError as unknown as typeToFlattenedError<ClientFormData>
+            }
           />
         </div>
       </form>
@@ -219,6 +226,7 @@ const ClientBlock = ({
   setIsOpen,
   register,
   transformedData,
+  zodError,
 }: {
   scenario: string[];
   isOpen: boolean;
@@ -226,6 +234,7 @@ const ClientBlock = ({
   register: Function;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transformedData: any;
+  zodError: typeToFlattenedError<ClientFormData>;
 }) => (
   <div className="flex w-full flex-col gap-3 p-5">
     <div className="flex w-full flex-col gap-3 p-5">
@@ -250,11 +259,21 @@ const ClientBlock = ({
         </div>
 
         <CollapsibleContent className="space-y-2">
-          <Input {...register("name")} placeholder="Name..." className="mt-2" />
+          <Input
+            {...register("name")}
+            placeholder={zodError?.fieldErrors?.name ?? "Name..."}
+            className={cn(
+              "mt-2",
+              zodError?.fieldErrors?.name && "border border-red-500",
+            )}
+          />
           <Input
             {...register("email")}
-            placeholder="Email..."
-            className="mt-2"
+            placeholder={zodError?.fieldErrors?.email ?? "Email..."}
+            className={cn(
+              "mt-2",
+              zodError?.fieldErrors?.email && "border border-red-500",
+            )}
             type="email"
           />
           <Input
