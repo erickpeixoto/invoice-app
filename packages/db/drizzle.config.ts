@@ -11,9 +11,9 @@ if (!process.env.DATABASE_URL) {
 
 export default {
   schema: "./schema",
+  out: "./migrations",
   driver: "mysql2",
   dbCredentials: {
     connectionString: process.env.DATABASE_URL,
   },
-  tablesFilter: ["t3turbo_*"],
 } satisfies Config;

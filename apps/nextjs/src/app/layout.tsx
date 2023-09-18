@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
+import { Toaster } from "~/components/ui/toaster";
+
 import "~/styles/globals.css";
 
 import { headers } from "next/headers";
@@ -25,15 +27,18 @@ export default function Layout(props: { children: React.ReactNode }) {
     <html lang="en">
       <head>{/* Additional <head> elements can be added here. */}</head>
       <body className={["font-sans", fontSans.variable].join(" ")}>
-        <div className="flex h-screen flex-col bg-blue-100 p-5 md:flex-row">
-          <SideBar />
-          <main className="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-10">
-            <NavBar />
-            <TRPCReactProvider headers={headers()}>
-              <ClerkProvider>{props.children}</ClerkProvider>
-            </TRPCReactProvider>
-          </main>
-        </div>
+        <ClerkProvider>
+          <Toaster />
+          <div className="flex h-screen flex-col bg-blue-100 p-5 md:flex-row">
+            <SideBar />
+            <main className="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-10">
+              <NavBar />
+              <TRPCReactProvider headers={headers()}>
+                {props.children}
+              </TRPCReactProvider>
+            </main>
+          </div>
+        </ClerkProvider>
       </body>
     </html>
   );
