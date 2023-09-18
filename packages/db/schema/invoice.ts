@@ -10,17 +10,19 @@ import {
 
 import { mySqlTable } from "./_table";
 import { clients } from "./client";
+import { users } from "./user";
 
 export const invoices = mySqlTable("invoices", {
   id: serial("id").primaryKey(),
   invoiceNumber: varchar("invoice_number", { length: 128 }).notNull(),
   clientId: int("client_id").notNull(),
   userId: int("user_id").notNull(),
+  authId: varchar("auth_id", { length: 128 }).notNull(),
   totalAmount: float("total_amount").notNull(),
   status: varchar("status", { length: 64 }).notNull(),
   dueDate: date("due_date").notNull(),
   issuedDate: date("issued_date").notNull(),
-  logo: varchar("logo", { length: 256 }).notNull(),
+  logo: varchar("logo", { length: 256 }),
   currency: varchar("currency", { length: 32 }).notNull(),
   subtotal: float("subtotal").notNull(),
   tax: float("tax").notNull(),
@@ -45,6 +47,10 @@ export const invoiceRelations = relations(invoices, ({ one, many }) => ({
   client: one(clients, {
     fields: [invoices.clientId],
     references: [clients.id],
+  }),
+  user: one(users, {
+    fields: [invoices.userId],
+    references: [users.id],
   }),
   lineItems: many(invoiceLineItems),
 }));

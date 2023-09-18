@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import {
   Popover,
   PopoverContent,
@@ -64,6 +65,7 @@ const CreateInvoiceForm = () => {
   const upcomingInvoice = useGeneratedInvoiceNumber();
   const { toast } = useToast();
   const router = useRouter();
+  const { userId } = useAuth();
 
   const [subtotal, setSubtotal] = useState(0);
   const [tax, setTax] = useState(0);
@@ -82,7 +84,7 @@ const CreateInvoiceForm = () => {
         description: "We've created your invoice for you.",
         duration: 5000,
       });
-      router.push("/invoices");
+      router.push("/invoice");
     },
     onError(error) {
       console.error("Error creating invoice:", error);
@@ -109,6 +111,7 @@ const CreateInvoiceForm = () => {
       totalAmount: total,
       logo: logotype?.[0]?.url ?? "",
       subtotal,
+      authId: userId ?? "",
       tax,
     };
 
@@ -129,24 +132,17 @@ const CreateInvoiceForm = () => {
     setTotal(newTotal);
   };
 
-  const users = [
-    { label: "John Doe", value: 1 },
-    { label: "Alice", value: 2 },
-    { label: "Bob", value: 3 },
-    { label: "Charlie", value: 4 },
-    { label: "Daisy", value: 5 },
-    { label: "Eve", value: 6 },
-  ] as const;
+  const users = api.users.all.useQuery().data?.map((user) => ({
+    label: user.name,
+    value: user.id,
+    profile: user.profile,
+  }));
 
-  // Sample client data
-  const clients = [
-    { label: "Client A", value: 1 },
-    { label: "Client B", value: 2 },
-    { label: "Client C", value: 3 },
-    { label: "Client D", value: 4 },
-    { label: "Client E", value: 5 },
-    { label: "Client F", value: 6 },
-  ] as const;
+  const clients = api.costumer.all.useQuery().data?.map((client) => ({
+    label: client.name,
+    value: client.id,
+    profile: client.profile,
+  }));
 
   return (
     <FormProvider {...methods}>
@@ -211,11 +207,10 @@ const CreateInvoiceForm = () => {
 
               <select
                 {...register("status")}
-                defaultValue="Draft"
+                defaultValue="Pending"
                 className="p-2"
               >
                 <option value="">Select...</option>
-                <option value="Draft">Draft</option>
                 <option value="Pending">Pending</option>
                 <option value="Paid">Paid</option>
                 <option value="Overdue">Overdue</option>
@@ -287,7 +282,7 @@ const CreateInvoiceForm = () => {
                           )}
                         >
                           {field.value
-                            ? users.find((user) => user.value === field.value)
+                            ? users?.find((user) => user.value === field.value)
                                 ?.label
                             : "Select User"}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -307,7 +302,7 @@ const CreateInvoiceForm = () => {
                         </div>
                         <CommandEmpty>No User found.</CommandEmpty>
                         <CommandGroup>
-                          {users.map((user) => (
+                          {users?.map((user) => (
                             <CommandItem
                               value={user.label}
                               key={user.value}
@@ -323,7 +318,7 @@ const CreateInvoiceForm = () => {
                                     : "opacity-0",
                                 )}
                               />
-                              <ClientAvatar />
+                              <ClientAvatar profile={user.profile} />
                               {user.label}
                             </CommandItem>
                           ))}
@@ -353,7 +348,7 @@ const CreateInvoiceForm = () => {
                           )}
                         >
                           {field.value
-                            ? clients.find(
+                            ? clients?.find(
                                 (client) => client.value === field.value,
                               )?.label
                             : "Select Client"}
@@ -368,13 +363,13 @@ const CreateInvoiceForm = () => {
                             className="w-[300px]"
                             placeholder="Search for the client..."
                           />
-                          <Link className="p-3" href={"/invoice/edit"}>
+                          <Link className="p-3" href={"/client/add"}>
                             <UserPlus />
                           </Link>
                         </div>
                         <CommandEmpty>No Client found.</CommandEmpty>
                         <CommandGroup>
-                          {clients.map((client) => (
+                          {clients?.map((client) => (
                             <CommandItem
                               value={client.label}
                               key={client.value}
@@ -390,7 +385,7 @@ const CreateInvoiceForm = () => {
                                     : "opacity-0",
                                 )}
                               />
-                              <ClientAvatar />
+                              <ClientAvatar profile={client.profile} />
                               {client.label}
                             </CommandItem>
                           ))}
@@ -417,13 +412,17 @@ const CreateInvoiceForm = () => {
   );
 };
 
-const ClientAvatar = () => {
+const ClientAvatar = ({ profile }: { profile: string | null }) => {
   return (
     <Avatar className="mr-2">
-      <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-      <AvatarFallback>
-        <Loading />
-      </AvatarFallback>
+      <AvatarImage src={profile ?? undefined} alt={"in.voice"} />
+      {!profile && (
+        <AvatarImage
+          src={"https://via.placeholder.com/150"}
+          alt="Profile"
+          className="inline-block rounded-full"
+        />
+      )}
     </Avatar>
   );
 };
