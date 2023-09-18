@@ -75,12 +75,13 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
 
   // Create mode
   const { mutateAsync: createClient, error } = api.costumer.create.useMutation({
-    onSuccess({ insertId }: MutationSuccessData) {
+    async onSuccess({ insertId }: MutationSuccessData) {
       toast({
         title: "Client created!",
         description: "We've created your Client for you.",
         duration: 5000,
       });
+      await context.costumer.all.invalidate();
       if (insertId) {
         router.push(`/client/edit/${insertId}`);
       }
