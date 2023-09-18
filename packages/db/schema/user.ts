@@ -1,22 +1,21 @@
-import { relations, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { serial, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 import { mySqlTable } from "./_table";
-import { clients } from "./client";
-import { invoices } from "./invoice";
 
 export const users = mySqlTable("users", {
   id: serial("id").primaryKey(),
-  username: varchar("username", { length: 128 }).notNull().unique(),
-  password: varchar("password", { length: 256 }).notNull(),
-  email: varchar("email", { length: 256 }).notNull().unique(),
+  name: varchar("name", { length: 256 }).notNull(),
+  email: varchar("email", { length: 256 }).notNull(),
+  phoneNumber: varchar("phoneNumber", { length: 15 }),
   createdAt: timestamp("created_at")
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at").onUpdateNow(),
+  profile: varchar("profile", { length: 256 }),
+  address: varchar("address", { length: 256 }),
+  zip: varchar("zip", { length: 256 }),
+  city: varchar("city", { length: 256 }),
+  state: varchar("state", { length: 256 }),
+  authId: varchar("auth_id", { length: 256 }),
 });
-
-export const userRelations = relations(users, ({ many }) => ({
-  invoices: many(invoices),
-  clients: many(clients),
-}));
