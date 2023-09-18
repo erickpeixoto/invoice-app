@@ -2,44 +2,63 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PlusIcon } from "lucide-react";
-
-import { Button } from "~/components/ui/button";
-
-const INVOICE_ADD_PATH = "/invoice/add";
+import { UserButton } from "@clerk/nextjs";
 
 const NavBar = () => {
   const pathname = usePathname();
-
-  const shouldRenderNewInvoiceButton = () => {
-    return pathname !== INVOICE_ADD_PATH;
-  };
-
   return (
     <div className="mb-5 flex items-center justify-between p-4">
-      <NavBarHeader />
-      {shouldRenderNewInvoiceButton() && <NewInvoiceButton />}
+      <NavBarHeader activePath={pathname} />
+      <UserButton />
     </div>
   );
 };
 
-const NavBarHeader = () => (
-  <div className="flex items-center">
-    <Link className="text-2xl font-medium text-gray-700" href="/">
-      Invoices
-    </Link>
-    <span className="mx-2 text-sm">/</span>
-    <span className="mr-2 text-blue-700">Dashboard</span>
-  </div>
-);
+interface NavBarHeaderProps {
+  activePath: string;
+}
 
-const NewInvoiceButton = () => (
-  <Link className="text-2xl font-medium text-gray-700" href={INVOICE_ADD_PATH}>
-    <Button className="bg-blue-200 text-blue-700 hover:bg-blue-500 hover:text-white ">
-      <PlusIcon />
-      New Invoice
-    </Button>
-  </Link>
-);
+const NavBarHeader: React.FC<NavBarHeaderProps> = ({ activePath }) => {
+  let breadcrumbLabel = "Dashboard"; // default
+  let breadcrumbRoute = "/"; // default
+
+  switch (activePath) {
+    case "/":
+      breadcrumbLabel = "Home";
+      breadcrumbRoute = "/";
+      break;
+    case "/invoice/list":
+      breadcrumbLabel = "Invoices";
+      breadcrumbRoute = "/invoice/list";
+      break;
+    case "/user/list":
+      breadcrumbLabel = "Users";
+      breadcrumbRoute = "/user/list";
+      break;
+    case "/client/list":
+    case `/client/edit/[id]`:
+      breadcrumbLabel = "Clients";
+      breadcrumbRoute = "/client/list";
+      break;
+    case "/profile":
+      breadcrumbLabel = "Profile";
+      breadcrumbRoute = "/profile";
+      break;
+    default:
+      break;
+  }
+
+  return (
+    <div className="flex items-center">
+      <Link href="/" className="text-2xl font-medium text-gray-700">
+        In.voice
+      </Link>
+      <span className="mx-2 text-sm">/</span>
+      <Link className="mr-2 text-blue-700" href={breadcrumbRoute}>
+        {breadcrumbLabel}
+      </Link>
+    </div>
+  );
+};
 
 export default NavBar;
