@@ -22,25 +22,27 @@ const NavBarHeader: React.FC<NavBarHeaderProps> = ({ activePath }) => {
   let breadcrumbLabel = "Dashboard"; // default
   let breadcrumbRoute = "/"; // default
 
-  switch (activePath) {
-    case "/":
+  switch (true) {
+    case activePath === "/":
       breadcrumbLabel = "Home";
       breadcrumbRoute = "/";
       break;
-    case "/invoice/list":
+    case activePath === "/invoice/list":
+    case activePath.startsWith("/invoice/edit/"):
       breadcrumbLabel = "Invoices";
       breadcrumbRoute = "/invoice/list";
       break;
-    case "/user/list":
+    case activePath === "/user/list":
+    case activePath.startsWith("/user/edit/"):
       breadcrumbLabel = "Users";
       breadcrumbRoute = "/user/list";
       break;
-    case "/client/list":
-    case `/client/edit/[id]`:
+    case activePath === "/client/list":
+    case activePath.startsWith("/client/edit/"):
       breadcrumbLabel = "Clients";
       breadcrumbRoute = "/client/list";
       break;
-    case "/profile":
+    case activePath === "/profile":
       breadcrumbLabel = "Profile";
       breadcrumbRoute = "/profile";
       break;
