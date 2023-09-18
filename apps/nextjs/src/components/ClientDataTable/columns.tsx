@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { ColumnDef } from "@tanstack/react-table";
 import { LayoutPanelTop, Trash2 } from "lucide-react";
 
@@ -17,6 +17,11 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import type { ClientFormData } from ".";
+
+interface ActionCellProps {
+  client: ClientFormData;
+  onDelete: (data: ClientFormData) => void;
+}
 
 export const getColumns = (
   handleDeleteClick: (data: ClientFormData) => void,
@@ -67,9 +72,9 @@ export const getColumns = (
     cell: ({ row }) => <div>{row.getValue("email")}</div>,
   },
   {
-    accessorKey: "fone",
+    accessorKey: "phone",
     header: "Phone",
-    cell: ({ row }) => <div>{row.getValue("fone")}</div>,
+    cell: ({ row }) => <div>{row.getValue("phone")}</div>,
   },
   {
     id: "actions",
@@ -81,14 +86,15 @@ export const getColumns = (
   },
 ];
 
-function ActionCell({
-  client,
-  onDelete,
-}: {
-  client: ClientFormData;
-  onDelete: (data: ClientFormData) => void;
-}) {
+const ActionCell: React.FC<ActionCellProps> = ({ client, onDelete }) => {
+  const pathName = usePathname();
   const router = useRouter();
+
+  // Determine if current route is for client or user
+  const isClient = pathName.includes("/client/");
+
+  const entityType = isClient ? "client" : "user";
+  const entityId = client.id; // derive entityId from the client object
 
   return (
     <DropdownMenu>
@@ -101,21 +107,21 @@ function ActionCell({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuItem
-          onClick={() => navigator.clipboard.writeText(String(client.id))}
+          onClick={() => navigator.clipboard.writeText(String(entityId))}
         >
-          Copy Client ID
+          {`Copy ${entityType.toUpperCase()} ID`}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={() => router.push(`/client/edit/${client.id}`)}
+          onClick={() => router.push(`/${entityType}/edit/${entityId}`)}
         >
-          View client
+          {`View ${entityType}`}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onDelete(client)}>
           <Trash2 className="mr-2 h-5 w-5" />
-          Delete client
+          {`Delete ${entityType}`}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+};
