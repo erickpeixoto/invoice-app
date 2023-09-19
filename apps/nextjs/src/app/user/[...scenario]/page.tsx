@@ -13,7 +13,7 @@ import type { UploadFileResponse } from "uploadthing/client";
 import type { typeToFlattenedError } from "zod";
 
 // Internal Components and Utilities
-import ClientDataTable from "~/components/ClientDataTable";
+import UserDataTable from "~/components/ClientDataTable";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
@@ -33,7 +33,7 @@ import { UploadButton } from "~/utils/uploadthing";
 
 export const runtime = "edge";
 
-type ClientFormData = RouterInputs["costumer"]["create"];
+type UserFormData = RouterInputs["users"]["create"];
 
 interface MutationSuccessData {
   insertId: string;
@@ -41,7 +41,7 @@ interface MutationSuccessData {
 
 const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
   const { scenario } = params;
-  const methods = useForm<ClientFormData>();
+  const methods = useForm<UserFormData>();
   const { register, handleSubmit, setValue } = methods;
 
   const { toast } = useToast();
@@ -57,91 +57,89 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
   const [isOpen, setIsOpen] = useState(scenario[0] === "edit");
   const [confirmModal, setConfirmModal] = useState(false);
 
-  const clients = api.costumer.all.useQuery().data;
-  const transformedData = mapSourceToTarget(clients);
+  const users = api.users.all.useQuery().data;
+  const transformedData = mapSourceToTarget(users);
 
   // Edition mode
-  const clientSelectedQuery = api.costumer.selected.useQuery({
+  const userSelectedQuery = api.users.selected.useQuery({
     id: scenario[1] ? parseInt(scenario[1]) : -1,
   });
-  const clientSelected = clientSelectedQuery.data?.[0];
+  const userSelected = userSelectedQuery.data?.[0];
 
   useEffect(() => {
-    if (clientSelected && scenario[0] === "edit") {
-      setSelectedValues(clientSelected as unknown as ClientFormData, setValue);
+    if (userSelected && scenario[0] === "edit") {
+      setSelectedValues(userSelected as unknown as UserFormData, setValue);
       setProfile(undefined);
     }
-  }, [clientSelected, scenario, setValue]);
+  }, [userSelected, scenario, setValue]);
 
   // Create mode
-  const { mutateAsync: createClient, error } = api.costumer.create.useMutation({
+  const { mutateAsync: createUser, error } = api.users.create.useMutation({
     async onSuccess({ insertId }: MutationSuccessData) {
       toast({
-        title: "Client created!",
-        description: "We've created your Client for you.",
+        title: "User created!",
+        description: "We've created your User for you.",
         duration: 5000,
       });
-      await context.costumer.all.invalidate();
+      await context.users.all.invalidate();
       if (insertId) {
-        router.push(`/client/edit/${insertId}`);
+        router.push(`/user/edit/${insertId}`);
       }
     },
     onError() {
-      console.error("Error creating client:", error);
+      console.error("Error creating user:", error);
     },
   });
   // Edit mode
-  const { mutateAsync: editClient } = api.costumer.update.useMutation({
+  const { mutateAsync: editUser } = api.users.update.useMutation({
     async onSuccess() {
       toast({
-        title: "Client updated!",
-        description: "We've updated your Client for you.",
+        title: "User updated!",
+        description: "We've updated your User for you.",
         duration: 5000,
       });
-      await context.costumer.all.invalidate();
+      await context.users.all.invalidate();
     },
     onError(error) {
-      console.error("Error updating client:", error);
+      console.error("Error updating user:", error);
     },
   });
 
   // Delete mode
-  const { mutateAsync: deleteClient } = api.costumer.delete.useMutation<number>(
-    {
-      async onSuccess() {
-        toast({
-          title: "Client deleted!",
-          description: "We've deleted your Client for you.",
-          duration: 5000,
-        });
-        await context.costumer.all.invalidate();
-        router.push(`/client/list/`);
-      },
-      onError(error) {
-        console.error("Error deleting client:", error);
-      },
+  const { mutateAsync: deleteUser } = api.users.delete.useMutation<number>({
+    async onSuccess() {
+      toast({
+        title: "User deleted!",
+        description: "We've deleted your User for you.",
+        duration: 5000,
+      });
+      await context.users.all.invalidate();
+      router.push(`/user/list/`);
     },
-  );
+    onError(error) {
+      console.error("Error deleting user:", error);
+    },
+  });
 
-  const onDelete = (data: ClientFormData) => {
+  const onDelete = (data: UserFormData) => {
     setConfirmModal(true);
     setIdToBeDeleted(data?.id ?? 0);
   };
 
-  const onSubmit = async (data: ClientFormData) => {
-    const costumerMock = {
+  const onSubmit = async (data: UserFormData) => {
+    const usersMock = {
       profile: profile?.[0]?.url ?? "",
       authId: userId!,
     };
     if (scenario[0] === "edit") {
-      await editClient({
+      await editUser({
         ...data,
-        ...costumerMock,
-        id: clientSelected?.id ?? 0,
+        ...usersMock,
+        id: userSelected?.id ?? 0,
       });
       return;
     }
-    await createClient({ ...data, ...costumerMock });
+    await createUser({ ...data, ...usersMock });
   };
 
   return (
@@ -151,14 +149,14 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
           {/* Logo Block */}
           <div className="flex w-full flex-col gap-3 border-r-2 border-r-slate-200 p-10 md:w-[350px]">
             <div className="mb-20 flex h-[200px] justify-center rounded-2xl bg-white p-4 shadow-xl">
-              {clientSelected && !profile?.[0]?.url && (
+              {userSelected && !profile?.[0]?.url && (
                 <Avatar className="mr-2 h-[150px] w-[150px]">
                   <AvatarImage
-                    src={clientSelected?.profile ?? ""}
+                    src={userSelected?.profile ?? ""}
                     alt="Profile"
                     className="inline-block rounded-full"
                   />
-                  {!clientSelected?.profile && (
+                  {!userSelected?.profile && (
                     <AvatarImage
                       src={"https://via.placeholder.com/150"}
                       alt="Profile"
@@ -183,10 +181,10 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
                   button({ isUploading, ready }) {
                     return (
                       <div className="flex flex-col items-center justify-center">
-                        {!isUploading && ready && !clientSelected && (
+                        {!isUploading && ready && !userSelected && (
                           <UploadCloud className="text-6xl text-violet-600" />
                         )}
-                        {!isUploading && ready && clientSelected && (
+                        {!isUploading && ready && userSelected && (
                           <Settings className="mt-5 h-7 w-7 text-gray-400 hover:text-violet-600" />
                         )}
                         <div className="text-sm">Profile</div>
@@ -196,7 +194,7 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
                   allowedContent({ ready, isUploading }) {
                     if (!ready) return <Loading />;
                     if (isUploading) return <Loading />;
-                    if (!clientSelected && !profile?.[0]?.url) {
+                    if (!userSelected && !profile?.[0]?.url) {
                       return (
                         <div className="flex flex-col items-center justify-center">
                           <div className="text-sm">
@@ -220,8 +218,8 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
             </div>
           </div>
 
-          {/* Client Block */}
-          <ClientBlock
+          {/* User Block */}
+          <UserBlock
             scenario={scenario}
             isOpen={isOpen}
             register={register}
@@ -229,7 +227,7 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
             transformedData={transformedData}
             zodError={
               error?.data
-                ?.zodError as unknown as typeToFlattenedError<ClientFormData>
+                ?.zodError as unknown as typeToFlattenedError<UserFormData>
             }
             handleDelete={onDelete}
           />
@@ -240,9 +238,9 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
               isOpen={confirmModal}
               triggerLabel=""
               title="Are you sure?"
-              description="When you delete this client, it will be gone forever."
+              description="When you delete this user, it will be gone forever."
               onConfirm={() => {
-                void deleteClient(idToBeDeleted ?? 0);
+                void deleteUser(idToBeDeleted ?? 0);
                 setConfirmModal(false);
               }}
               onCancel={() => setConfirmModal(false)}
@@ -260,13 +258,13 @@ const Loading = () => {
   );
 };
 
-const setSelectedValues = (data: ClientFormData, setValue: Function) => {
+const setSelectedValues = (data: UserFormData, setValue: Function) => {
   Object.keys(data).forEach((key) => {
-    setValue(key, data[key as keyof ClientFormData]);
+    setValue(key, data[key as keyof UserFormData]);
   });
 };
 
-const ClientBlock = ({
+const UserBlock = ({
   scenario,
   isOpen,
   setIsOpen,
@@ -281,8 +279,8 @@ const ClientBlock = ({
   register: Function;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transformedData: any;
-  zodError: typeToFlattenedError<ClientFormData>;
-  handleDelete: (data: ClientFormData) => void;
+  zodError: typeToFlattenedError<UserFormData>;
+  handleDelete: (data: UserFormData) => void;
 }) => (
   <div className="flex w-full flex-col gap-3 p-5">
     <div className="flex w-full flex-col gap-3 p-5">
@@ -293,7 +291,7 @@ const ClientBlock = ({
       >
         <div className="flex gap-3">
           <Label className="mb-5 text-2xl font-bold">
-            {scenario[1] ? "edit Client" : "new Client"}
+            {scenario[1] ? "edit User" : "new User"}
           </Label>
           <CollapsibleTrigger asChild>
             <Button
@@ -349,7 +347,7 @@ const ClientBlock = ({
           </div>
         </CollapsibleContent>
       </Collapsible>
-      <ClientDataTable data={transformedData} onDelete={handleDelete} />
+      <UserDataTable data={transformedData} onDelete={handleDelete} />
     </div>
   </div>
 );

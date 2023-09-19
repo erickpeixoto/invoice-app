@@ -1,7 +1,3 @@
- 
- 
- 
- 
 "use client";
 
 import * as React from "react";
@@ -19,8 +15,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  ArrowBigLeft,
-  ArrowBigRight,
+  ChevronFirst,
+  ChevronLast,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react";
@@ -49,26 +45,15 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import type { RouterInputs } from "~/utils/api";
-import { columns } from "./columns";
+import { getColumns } from "./columns";
 
-type InvoiceFormData = RouterInputs["invoice"]["create"];
-export type InvoiceProps = Pick<
-  InvoiceFormData,
-  | "userId"
-  | "invoiceNumber"
-  | "clientId"
-  | "totalAmount"
-  | "status"
-  | "dueDate"
-  | "issuedDate"
-  | "logo"
-  | "currency"
-  | "subtotal"
-  | "tax"
-  | "lineItems"
->;
+export type InvoiceFormData = RouterInputs["invoice"]["create"];
+interface InvoiceDataTableProps {
+  data: InvoiceFormData[];
+  onDelete: (data: InvoiceFormData) => void;
+}
 
-const InvoiceTable = ({ data }: { data: InvoiceProps[] }) => {
+const InvoiceTable = ({ data, onDelete }: InvoiceDataTableProps) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -77,9 +62,26 @@ const InvoiceTable = ({ data }: { data: InvoiceProps[] }) => {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
+  const handleDeleteClick = (invoiceData: InvoiceFormData) => {
+    onDelete(invoiceData);
+  };
+
+  const [filterType, setFilterType] = React.useState<
+    "invoiceNumber" | "status"
+  >("invoiceNumber");
+  const [filterValue, setFilterValue] = React.useState<string>("");
+  const handleFilterChange = (value: string) => {
+    if (filterType === "invoiceNumber") {
+      table.getColumn("invoiceNumber")?.setFilterValue(value);
+    } else if (filterType === "status") {
+      table.getColumn("status")?.setFilterValue(value);
+    }
+    setFilterValue(value);
+  };
+
   const table = useReactTable({
     data,
-    columns,
+    columns: getColumns(handleDeleteClick),
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -96,17 +98,36 @@ const InvoiceTable = ({ data }: { data: InvoiceProps[] }) => {
     },
   });
 
+  const handleFilterTypeChange = (value: string) => {
+    if (value === "invoiceNumber" || value === "status") {
+      setFilterType(value);
+    }
+  };
+
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
+      <div className="flex items-center space-x-2 py-4">
+        <Select
+          value={filterType}
+          onValueChange={handleFilterTypeChange}
+          defaultValue="status"
+        >
+          <SelectTrigger className="w-[180px] p-3">
+            <SelectValue placeholder={filterType} />
+          </SelectTrigger>
+          <SelectContent side="top">
+            <SelectItem value="invoiceNumber">Invoice Number</SelectItem>
+            <SelectItem value="status">Status</SelectItem>
+          </SelectContent>
+        </Select>
+
         <Input
-          placeholder="Filter status..."
-          value={(table.getColumn("status")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("status")?.setFilterValue(event.target.value)
-          }
+          placeholder={`Filter by ${filterType}...`}
+          value={filterValue}
+          onChange={(event) => handleFilterChange(event.target.value)}
           className="max-w-sm"
         />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -117,23 +138,20 @@ const InvoiceTable = ({ data }: { data: InvoiceProps[] }) => {
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
+              .map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className="capitalize"
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                >
+                  {column.id}
+                </DropdownMenuCheckboxItem>
+              ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -173,30 +191,17 @@ const InvoiceTable = ({ data }: { data: InvoiceProps[] }) => {
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
+                <TableCell className="h-24 text-center">No results.</TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} invoice(s) selected.
-        </div>
         <div className="flex items-center justify-between px-2">
-          <div className="text-muted-foreground flex-1 text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
-          </div>
           <div className="flex items-center space-x-6 lg:space-x-8">
             <div className="flex items-center space-x-2">
-              <p className="text-sm font-medium">Rows per page</p>
+              <p className="text-sm font-medium">Invoices per page</p>
               <Select
                 value={`${table.getState().pagination.pageSize}`}
                 onValueChange={(value) => {
@@ -229,13 +234,14 @@ const InvoiceTable = ({ data }: { data: InvoiceProps[] }) => {
                 disabled={!table.getCanPreviousPage()}
               >
                 <span className="sr-only">Go to first page</span>
-                <ArrowBigLeft className="h-4 w-4" />
+                <ChevronFirst className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
+                type="button"
               >
                 <span className="sr-only">Go to previous page</span>
                 <ChevronLeftIcon className="h-4 w-4" />
@@ -245,6 +251,7 @@ const InvoiceTable = ({ data }: { data: InvoiceProps[] }) => {
                 className="h-8 w-8 p-0"
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
+                type="button"
               >
                 <span className="sr-only">Go to next page</span>
                 <ChevronRightIcon className="h-4 w-4" />
@@ -256,7 +263,7 @@ const InvoiceTable = ({ data }: { data: InvoiceProps[] }) => {
                 disabled={!table.getCanNextPage()}
               >
                 <span className="sr-only">Go to last page</span>
-                <ArrowBigRight className="h-4 w-4" />
+                <ChevronLast className="h-4 w-4" />
               </Button>
             </div>
           </div>

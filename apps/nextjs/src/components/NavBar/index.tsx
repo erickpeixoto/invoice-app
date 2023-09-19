@@ -3,12 +3,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
+import { useAtom } from "jotai";
+
+import { notificationCountAtom } from "~/atoms";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 
 const NavBar = () => {
   const pathname = usePathname();
+  const [overdueCount] = useAtom(notificationCountAtom);
   return (
     <div className="mb-5 flex items-center justify-between p-4">
-      <NavBarHeader activePath={pathname} />
+      <NavBarHeader activePath={pathname} overdueCount={overdueCount} />
       <UserButton />
     </div>
   );
@@ -16,31 +26,38 @@ const NavBar = () => {
 
 interface NavBarHeaderProps {
   activePath: string;
+  overdueCount: number | null;
 }
 
-const NavBarHeader: React.FC<NavBarHeaderProps> = ({ activePath }) => {
+const NavBarHeader = ({ activePath, overdueCount }: NavBarHeaderProps) => {
   let breadcrumbLabel = "Dashboard"; // default
   let breadcrumbRoute = "/"; // default
 
-  switch (activePath) {
-    case "/":
-      breadcrumbLabel = "Home";
-      breadcrumbRoute = "/";
+  switch (true) {
+    case activePath === "/":
+      breadcrumbLabel = "Invoice Dashboard";
+      breadcrumbRoute = "/invoice";
       break;
-    case "/invoice/list":
+    case activePath === "/invoice/list":
+    case activePath.startsWith("/invoice/edit/"):
       breadcrumbLabel = "Invoices";
+      breadcrumbRoute = "/invoice/";
+      break;
+    case activePath.startsWith("/invoice/"):
+      breadcrumbLabel = "Invoice";
       breadcrumbRoute = "/invoice/list";
       break;
-    case "/user/list":
+    case activePath === "/user/list":
+    case activePath.startsWith("/user/edit/"):
       breadcrumbLabel = "Users";
       breadcrumbRoute = "/user/list";
       break;
-    case "/client/list":
-    case `/client/edit/[id]`:
+    case activePath === "/client/list":
+    case activePath.startsWith("/client/edit/"):
       breadcrumbLabel = "Clients";
       breadcrumbRoute = "/client/list";
       break;
-    case "/profile":
+    case activePath === "/profile":
       breadcrumbLabel = "Profile";
       breadcrumbRoute = "/profile";
       break;
@@ -57,6 +74,19 @@ const NavBarHeader: React.FC<NavBarHeaderProps> = ({ activePath }) => {
       <Link className="mr-2 text-blue-700" href={breadcrumbRoute}>
         {breadcrumbLabel}
       </Link>
+      {/* Displaying overdue invoices count next to the breadcrumb label */}
+      <span className="ml-2 rounded-full bg-red-500 px-2 py-1 text-xs text-white">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>{overdueCount}</TooltipTrigger>
+            <TooltipContent>
+              <p>
+                {overdueCount} overdue invoice{overdueCount !== 1 && "s"}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </span>
     </div>
   );
 };
