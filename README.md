@@ -1,10 +1,14 @@
 # In.voice
-
-![In.voice Logo](https://utfs.io/f/feb5941e-c5b0-43de-b186-e2a85f46c350-6lnpx8.00.31.png)
-
 In.voice is a comprehensive invoicing solution designed to streamline the billing process and management for businesses and freelancers.
 
 **Live Demo**: [https://invoice-app-psi-seven.vercel.app/](https://invoice-app-psi-seven.vercel.app/)
+
+## 🎥 Video Presentation
+
+Get a quick overview of the In.voice application in action. Click on the image below to watch the video presentation:
+
+[![In.voice Video Presentation](https://utfs.io/f/feb5941e-c5b0-43de-b186-e2a85f46c350-6lnpx8.00.31.png)](https://www.loom.com/share/4e709962e62c4b38bbfaa123017122f9?sid=25fe7b11-7446-4571-b865-c4e8246d31cb)
+
 
 ## 📝 Table of Contents
 
