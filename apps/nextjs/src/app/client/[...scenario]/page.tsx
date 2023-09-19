@@ -40,7 +40,12 @@ interface MutationSuccessData {
 }
 
 const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
-  const { scenario } = params;
+  let { scenario } = params;
+
+  if (scenario && scenario.length === 1) {
+    const decodedScenario = decodeURIComponent(scenario[0] ?? "");
+    scenario = decodedScenario.split("/");
+  }
   const methods = useForm<ClientFormData>();
   const { register, handleSubmit, setValue } = methods;
 
