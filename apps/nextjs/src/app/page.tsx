@@ -1,11 +1,5 @@
-import React from "react";
+import { redirect } from "next/navigation";
 
-const Edit = () => {
-  return (
-    <div>
-      <h1>Edit Invoice</h1>
-    </div>
-  );
-};
-
-export default Edit;
+export default function Home() {
+  redirect("/invoice");
+}
