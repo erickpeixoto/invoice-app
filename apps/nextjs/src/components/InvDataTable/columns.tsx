@@ -3,8 +3,9 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import type { ColumnDef } from "@tanstack/react-table";
-import { LayoutPanelTop, Trash2 } from "lucide-react";
+import { Download, LayoutPanelTop, Trash2 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -17,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import type { InvoiceFormData } from ".";
+import PDFInvoice from "./pdfInvoice";
 
 interface ActionCellProps {
   invoice: InvoiceFormData;
@@ -131,6 +133,15 @@ const ActionCell: React.FC<ActionCellProps> = ({ invoice, onDelete }) => {
         <DropdownMenuItem onClick={() => onDelete(invoice)}>
           <Trash2 className="mr-2 h-5 w-5" />
           {`Delete ${entityType}`}
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <Download className="mr-2 h-5 w-5" />
+          <PDFDownloadLink
+            document={<PDFInvoice invoice={invoice} />}
+            fileName={`Invoice-${invoice.invoiceNumber}.pdf`}
+          >
+            {({ loading }) => (loading ? "Loading..." : `PDF ${entityType}`)}
+          </PDFDownloadLink>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
