@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 interface TargetType {
   id: number;
   name: string;
@@ -40,5 +44,20 @@ export function mapSourceToTarget(
     state: client.state ?? "",
     authId: client.authId ?? "",
     phone: client.phoneNumber ?? "",
+  }));
+}
+
+// INVOICE MAPPER
+export function mapInvoiceSourceToTarget(sourceData: any[]): any[] {
+  return sourceData.map((invoice) => ({
+    id: invoice.id ?? 0,
+    userName: invoice.user?.name ?? "",
+    clientName: invoice.client?.name ?? "",
+    status: invoice.status ?? "",
+    dueDate:
+      invoice.dueDate instanceof Date
+        ? invoice.dueDate.toLocaleDateString()
+        : invoice.dueDate ?? "",
+    invoiceNumber: invoice.invoiceNumber ?? "",
   }));
 }

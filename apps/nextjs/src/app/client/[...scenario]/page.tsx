@@ -147,9 +147,9 @@ const CreateInvoiceForm = ({ params }: { params: { scenario: string[] } }) => {
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex h-screen">
+        <div className="flex h-screen flex-col md:flex-row">
           {/* Logo Block */}
-          <div className="flex w-[350px] flex-col gap-3 border-r-2 border-r-slate-200 p-10">
+          <div className="flex w-full flex-col gap-3 border-r-2 border-r-slate-200 p-10 md:w-[350px]">
             <div className="mb-20 flex h-[200px] justify-center rounded-2xl bg-white p-4 shadow-xl">
               {clientSelected && !profile?.[0]?.url && (
                 <Avatar className="mr-2 h-[150px] w-[150px]">
@@ -289,7 +289,7 @@ const ClientBlock = ({
       <Collapsible
         open={isOpen}
         onOpenChange={setIsOpen}
-        className="w-2/3 space-y-2"
+        className="w-full space-y-2 md:w-2/3"
       >
         <div className="flex gap-3">
           <Label className="mb-5 text-2xl font-bold">

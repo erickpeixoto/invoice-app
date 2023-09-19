@@ -25,21 +25,26 @@ interface GenericCalendarProps {
   description?: string;
   name: string;
   placeholder?: string;
+  value?: Date | null;
 }
 export const GenericCalendar = ({
   label,
   description,
   name,
   placeholder,
+  value = null,
 }: GenericCalendarProps) => {
   const { register, setValue } = useFormContext();
-  const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = React.useState<Date | null>(value);
+
+  React.useEffect(() => {
+    setSelectedDate(value);
+  }, [value]);
 
   const handleDateChange = (date?: Date) => {
     if (date) {
       setSelectedDate(date);
-      setValue(name, date); // Update react-hook-form's value
-      console.log("date", date);
+      setValue(name, date);
     }
   };
 
