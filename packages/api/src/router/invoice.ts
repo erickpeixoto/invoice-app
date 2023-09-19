@@ -123,4 +123,95 @@ export const invoiceRouter = createTRPCRouter({
   delete: publicProcedure.input(z.number()).mutation(({ ctx, input }) => {
     return ctx.db.delete(schema.invoices).where(eq(schema.invoices.id, input));
   }),
+  selected: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .query(({ ctx, input }) => {
+      return ctx.db.query.invoices.findMany({
+        where: eq(schema.invoices.id, input.id),
+        with: {
+          client: true,
+          lineItems: true,
+          user: true,
+        },
+      });
+    }),
+
+  update: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        invoiceNumber: z.string(),
+        clientId: z.number(),
+        userId: z.number(),
+        authId: z.string(),
+        totalAmount: z.number(),
+        status: z.string(),
+        dueDate: z.date(),
+        issuedDate: z.date(),
+        logo: z.string(),
+        currency: z.string(),
+        subtotal: z.number(),
+        tax: z.number(),
+        lineItems: z.array(
+          z.object({
+            id: z.number().optional(),
+            invoiceId: z.number().optional(),
+            description: z.string(),
+            amount: z.number(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, lineItems, ...rest } = input;
+
+      // Update the main invoice data
+      const updatedInvoice = await ctx.db
+        .update(schema.invoices)
+        .set(rest)
+        .where(eq(schema.invoices.id, id));
+
+      if (!updatedInvoice) {
+        throw new Error("Failed to update invoice");
+      }
+
+      // Fetch the current line items associated with the invoice
+      const currentLineItems = await ctx.db.query.invoiceLineItems.findMany({
+        where: eq(schema.invoiceLineItems.invoiceId, id),
+      });
+
+      // Update or create line items
+      for (const lineItem of lineItems) {
+        if (lineItem.id) {
+          await ctx.db
+            .update(schema.invoiceLineItems)
+            .set(lineItem)
+            .where(eq(schema.invoiceLineItems.id, lineItem.id));
+        } else {
+          await ctx.db.insert(schema.invoiceLineItems).values({
+            ...lineItem,
+            invoiceId: id,
+          });
+        }
+      }
+
+      // Delete line items that are not in the input
+      for (const currentLineItem of currentLineItems) {
+        if (!lineItems.some((li) => li.id === currentLineItem.id)) {
+          await ctx.db
+            .delete(schema.invoiceLineItems)
+            .where(eq(schema.invoiceLineItems.id, currentLineItem.id));
+        }
+      }
+
+      // fetch the updated invoice with line items and return it
+      const updatedInvoiceWithItems = await ctx.db.query.invoices.findFirst({
+        where: eq(schema.invoices.id, id),
+        with: {
+          lineItems: true,
+        },
+      });
+
+      return updatedInvoiceWithItems;
+    }),
 });
