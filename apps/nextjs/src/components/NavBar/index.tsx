@@ -78,7 +78,7 @@ const NavBarHeader = ({ activePath, overdueCount }: NavBarHeaderProps) => {
       <span className="ml-2 rounded-full bg-red-500 px-2 py-1 text-xs text-white">
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger>{overdueCount}</TooltipTrigger>
+            <TooltipTrigger>{overdueCount ?? 0}</TooltipTrigger>
             <TooltipContent>
               <p>
                 {overdueCount} overdue invoice{overdueCount !== 1 && "s"}
