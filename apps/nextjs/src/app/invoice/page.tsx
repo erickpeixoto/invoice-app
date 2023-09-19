@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
+import { useAtom } from "jotai";
 
-// Internal Components and Utilities
+import { invoicesCountAtom, notificationCountAtom } from "~/atoms";
 import InvoiceDataTable from "~/components/InvDataTable";
 import { ConfirmDialog } from "~/components/ui/confim";
 import { useToast } from "~/components/ui/use-toast";
@@ -26,11 +27,14 @@ const CreateInvoiceForm = () => {
   const transformedData = mapInvoiceSourceToTarget(data?.invoices ?? []);
   const [confirmModal, setConfirmModal] = useState(false);
   const [idToBeDeleted, setIdToBeDeleted] = useState<number | null>(null);
+  const [, setNotificationCount] = useAtom(notificationCountAtom);
+  const [, setInvoicesCount] = useAtom(invoicesCountAtom);
 
   const onDelete = (data: IvoiceTypes) => {
     setConfirmModal(true);
     setIdToBeDeleted(data?.id ?? 0);
   };
+
   // Delete mode
   const { mutateAsync: deleteInvoice } = api.invoice.delete.useMutation<number>(
     {
@@ -47,6 +51,10 @@ const CreateInvoiceForm = () => {
       },
     },
   );
+
+  // State management
+  setNotificationCount(data?.statusCounts.overdue ?? 0);
+  setInvoicesCount(data?.invoices.length ?? 0);
 
   return (
     <div className="flex w-full flex-col">
@@ -82,7 +90,7 @@ const CreateInvoiceForm = () => {
         <div className="mt-6 md:mt-0">
           <Link
             href={"/invoice/add"}
-            className="rounded-md bg-violet-400 p-5 text-white hover:bg-violet-700"
+            className="w-full rounded-md bg-violet-400 p-5 text-white hover:bg-violet-700"
           >
             Invoice Add
           </Link>
